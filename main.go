@@ -31,8 +31,14 @@ func handler(c *gin.Context) {
 	var form Form
 	c.ShouldBind(&form)
 
-	text := strings.Split(form.Text, " ")
-	cmd := exec.Command(text[0], text[1:]...)
+	var cmd *exec.Cmd
+	_, err := exec.LookPath("bash")
+	if err == nil {
+		cmd = exec.Command("bash", "-c", form.Text)
+	} else {
+		cmd = exec.Command("sh", "-c", form.Text)
+	}
+
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	if err := cmd.Start(); err != nil {
